@@ -1,111 +1,106 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório Lalamove Dark Mode</title>
+    <title>Controle de Corridas</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- IMPORTANTE: o JS está separado -->
+    <script src="script.js" defer></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+
+
 </head>
 
 <body>
+
+    <div id="loginTela" class="login-container">
+        <h2>Login</h2>
+        <input type="text" id="loginUser" placeholder="Usuário">
+        <input type="password" id="loginPass" placeholder="Senha">
+        <button onclick="login()">Entrar</button>
+        <p id="loginErro"></p>
+
+
+    </div>
+
+
     <div class="container">
 
         <div class="header">
-            <img src="assets/Logo La Belle.png" alt="Logo da Empresa" class="logo">
-            <h1>Relatório de Corridas Lalamove</h1>
-        </div>
-
-
-        <!-- Formulário acessível -->
-        <form id="corridaForm">
-            <h2>Adicionar Corrida</h2>
-            <label for="partida">Endereço de Partida:</label>
-            <input type="text" id="partida" name="partida" placeholder="Digite o endereço de partida"
-                title="Digite o endereço de partida" required>
-
-            <label for="cliente">Cliente:</label>
-            <input type="text" id="cliente" name="cliente" placeholder="Digite o nome do cliente"
-                title="Digite o nome do cliente" required>
-
-            <label for="motivo">Motivo:</label>
-            <input type="text" id="motivo" name="motivo" placeholder="Digite o motivo da corrida"
-                title="Digite o motivo da corrida" required>
-
-            <label for="destino">Endereço de Destino:</label>
-            <input type="text" id="destino" name="destino" placeholder="Digite o endereço de destino"
-                title="Digite o endereço de destino" required>
-
-            <label for="valor">Valor (R$):</label>
-            <input type="number" id="valor" name="valor" placeholder="0.00" title="Digite o valor da corrida em reais"
-                step="0.01" required>
-
-            <button type="submit" title="Clique para adicionar a corrida">Adicionar Corrida</button>
-        </form>
-
-        <!-- Filtros -->
-        <h2>Filtros</h2>
-        <div class="filtros">
-            <input type="text" id="filtroCliente" placeholder="Filtrar por Cliente"
-                title="Digite o nome do cliente para filtrar">
-            <input type="month" id="filtroMes" title="Selecione o mês para filtrar">
-            <button id="limparFiltro" title="Clique para limpar os filtros">Limpar Filtros</button>
-        </div>
-
-        <!-- Tabela de corridas -->
-        <h2>Corridas Registradas</h2>
-        <table id="tabelaCorridas">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Partida</th>
-                    <th>Cliente</th>
-                    <th>Motivo</th>
-                    <th>Destino</th>
-                    <th>Valor (R$)</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-
-        <!-- Resumo -->
-        <div class="resumo">
-            <h2>Resumo</h2>
-            <p id="mediaSemanal">Média Semanal: R$ 0.00</p>
-            <p id="totalMensal">Total Mensal: R$ 0.00</p>
-            <p id="totalPorCliente">Total por Cliente: R$ 0.00</p>
-        </div>
-
-        <!-- Exportação -->
-        <div class="exportar">
-            <h2>Exportar Relatório</h2>
-            <button id="exportExcel" title="Clique para exportar o relatório para Excel">Exportar para Excel</button>
-            <button id="exportPDF" title="Clique para exportar o relatório para PDF">Exportar para PDF</button>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <p>Desenvolvido por William Hartwig Brandl</p>
-            <div class="redes-sociais">
-                <a href="https://www.linkedin.com/in/william-hartwig-brandl/?lipi=urn%3Ali%3Apage%3Ad_flagship3_feed%3BFhpCkebSSOGposVnVE5GFA%3D%3D" target="_blank" rel="noopener" title="LinkedIn">
-                    <img src="https://cdn-icons-png.flaticon.com/24/174/174857.png" alt="LinkedIn">
-                </a>
-                <a href="https://github.com/WilliamBrandl" target="_blank" rel="noopener" title="GitHub">
-                    <img src="https://cdn-icons-png.flaticon.com/24/733/733609.png" alt="GitHub">
-                </a>
-                <a href="https://www.instagram.com/w.brandl?igsh=ZGt1ODZtN2dudmZq&utm_source=qr" target="_blank" rel="noopener" title="Instagram">
-                    <img src="assets/instagram.png" alt="Instagram">
-                </a>
+            <img class="logo" src="assets/Logo La Belle.png" alt="Logo da empresa">
+            <div>
+                <h1>Controle de Corridas</h1>
+                <p class="sub">Gerencie, edite e acompanhe seus gastos</p>
             </div>
         </div>
-    </footer>
 
-    <script src="script.js"></script>
+        <!-- FORM -->
+        <form id="formCorrida">
+            <h2>Adicionar Corrida</h2>
+
+            <label>Cliente:</label>
+            <input type="text" id="cliente" required>
+
+            <label>Destino:</label>
+            <input type="text" id="destino" required>
+
+            <label>Valor (R$):</label>
+            <input type="number" id="valor" step="0.01" required>
+
+            <div class="form-actions">
+                <button type="submit">Salvar</button>
+                <button class="secondary" type="reset">Limpar</button>
+            </div>
+        </form>
+
+        <!-- RESUMOS -->
+        <div class="resumo-grid">
+            <div class="card resumo-card">
+                <h3>Total Semanal</h3>
+                <p id="totalSemanalP">R$ 0,00</p>
+            </div>
+            <div class="card resumo-card">
+                <h3>Média Semanal</h3>
+                <p id="mediaSemanalP">R$ 0,00</p>
+            </div>
+            <div class="card resumo-card">
+                <h3>Total Mensal</h3>
+                <p id="totalMensalP">R$ 0,00</p>
+            </div>
+            <div class="card resumo-card">
+                <h3>Total por Cliente</h3>
+                <p id="totalPorClienteP">Nenhum</p>
+            </div>
+        </div>
+
+        <input type="text" id="filtroCliente" placeholder="Filtrar por cliente...">
+
+        <button onclick="exportarExcel()">Exportar Excel</button>
+        <button onclick="exportarPDF()">Exportar PDF</button>
+
+
+
+        <!-- LISTA DE CORRIDAS -->
+        <div class="lista-corridas" id="listaCorridas"></div>
+
+        <div class="grafico-container">
+            <canvas id="graficoMensal"></canvas>
+        </div>
+
+
+
+        <footer>© 2025 - Desenvolvido por: William Hartwig Brandl</footer>
+
+    </div>
+
 </body>
 
 </html>

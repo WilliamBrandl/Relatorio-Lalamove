@@ -1,256 +1,227 @@
-const corridaForm = document.getElementById('corridaForm');
-const tabelaBody = document.querySelector('#tabelaCorridas tbody');
-const mediaSemanalP = document.getElementById('mediaSemanal');
-const totalMensalP = document.getElementById('totalMensal');
-const totalPorClienteP = document.getElementById('totalPorCliente');
-const filtroCliente = document.getElementById('filtroCliente');
-const filtroMes = document.getElementById('filtroMes');
-const limparFiltro = document.getElementById('limparFiltro');
-const exportExcelBtn = document.getElementById('exportExcel');
-const exportPDFBtn = document.getElementById('exportPDF');
+/* ====== Estado inicial (localStorage) ====== */
+let corridas = JSON.parse(localStorage.getItem("corridas") || "[]");
 
-let corridas = [];
+let grafico;
 
-// Carregar corridas do localStorage
-window.onload = function () {
-    const dados = localStorage.getItem('corridasLalamove');
-    if (dados) {
-        corridas = JSON.parse(dados);
-        corridas.forEach(function (c) { c.data = new Date(c.data); });
-        atualizarTabela();
-    }
+/* DOM */
+const listaCorridasDiv = document.getElementById("listaCorridas");
+const form = document.getElementById("formCorrida");
+
+const totalSemanalP = document.getElementById("totalSemanalP");
+const mediaSemanalP = document.getElementById("mediaSemanalP");
+const totalMensalP = document.getElementById("totalMensalP");
+const totalPorClienteP = document.getElementById("totalPorClienteP");
+
+const inputCliente = document.getElementById("cliente");
+const inputDestino = document.getElementById("destino");
+const inputValor = document.getElementById("valor");
+const filtroCliente = document.getElementById("filtroCliente");
+
+
+/* ===== Salvar no localStorage ===== */
+function salvar() {
+    localStorage.setItem("corridas", JSON.stringify(corridas));
+}
+
+/* ===== Adicionar corrida ===== */
+form.onsubmit = function (e) {
+    e.preventDefault();
+
+    const cliente = inputCliente.value.trim();
+    const destino = inputDestino.value.trim();
+    const valor = parseFloat(inputValor.value);
+
+    if (!cliente || !destino || isNaN(valor)) return;
+
+    corridas.push({
+        id: Date.now(),
+        cliente,
+        destino,
+        valor,
+        data: new Date()
+    });
+
+    salvar();
+    atualizarLista();
+    atualizarResumo();
+    atualizarGrafico();
+    form.reset();
 };
 
-// Adicionar corrida
-corridaForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const partida = document.getElementById('partida').value;
-    const cliente = document.getElementById('cliente').value;
-    const motivo = document.getElementById('motivo').value;
-    const destino = document.getElementById('destino').value;
-    const valor = parseFloat(document.getElementById('valor').value);
 
-    const corrida = { partida, cliente, motivo, destino, valor, data: new Date() };
-    corridas.push(corrida);
-
-    salvarLocalStorage();
-    atualizarTabela();
-    corridaForm.reset();
-
-    // Animação de confirmação
-    corridaForm.style.animation = "flash 0.3s ease-in-out";
-    setTimeout(function () { corridaForm.style.animation = ""; }, 300);
-});
-
-// Atualizar tabela com filtros
-function atualizarTabela() {
-    const clienteFiltro = filtroCliente.value.toLowerCase();
-    const mesFiltro = filtroMes.value;
-    tabelaBody.innerHTML = '';
-
-    corridas.forEach(function (c, index) {
-        const mesCorrida = c.data.toISOString().slice(0, 7);
-        if ((!clienteFiltro || c.cliente.toLowerCase().includes(clienteFiltro)) &&
-            (!mesFiltro || mesFiltro === mesCorrida)) {
-
-            const row = document.createElement('tr');
-            row.classList.add('fade-in');
-            row.innerHTML =
-                '<td>' + c.data.toLocaleDateString() + '</td>' +
-                '<td>' + c.partida + '</td>' +
-                '<td>' + c.cliente + '</td>' +
-                '<td>' + c.motivo + '</td>' +
-                '<td>' + c.destino + '</td>' +
-                '<td>R$ ' + c.valor.toFixed(2) + '</td>' +
-                '<td><button class="delete-btn" onclick="excluirCorrida(' + index + ')">Excluir</button></td>';
-            tabelaBody.appendChild(row);
-        }
-    });
-
-    calcularResumo();
-}
-
-// Calcular resumo
-function calcularResumo() {
-    const now = new Date();
-
-    // =============================================
-    // 1) CORRIDAS DA ÚLTIMA SEMANA (7 dias)
-    // =============================================
-    const semanaCorridas = corridas.filter(c =>
-        (now - c.data) / (1000 * 60 * 60 * 24) <= 7
-    );
-
-    const totalSemanal = semanaCorridas.reduce((acc, c) => acc + c.valor, 0);
-    const mediaSemanal = semanaCorridas.length ? totalSemanal / semanaCorridas.length : 0;
-    mediaSemanalP.textContent = "Média Semanal: R$ " + mediaSemanal.toFixed(2);
-
-    // Média semanal equivalente para o mês
-    const diasNoMes = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const semanasEquivalentes = diasNoMes / 7;
-    const mediaMensalEquivalente = mediaSemanal * semanasEquivalentes;
-
-    mediaMensalEquivalenteP.textContent =
-        "Média Mensal Equivalente: R$ " + mediaMensalEquivalente.toFixed(2);
+filtroCliente.oninput = () => atualizarLista();
 
 
-    // =============================================
-    // 2) CORRIDAS DO MÊS ATUAL
-    // =============================================
-    const mesCorridas = corridas.filter(c =>
-        c.data.getMonth() === now.getMonth() &&
-        c.data.getFullYear() === now.getFullYear()
-    );
+/* ===== Atualizar lista ===== */
 
-    const totalMensal = mesCorridas.reduce((acc, c) => acc + c.valor, 0);
-    totalMensalP.textContent = "Total Mensal: R$ " + totalMensal.toFixed(2);
+function atualizarLista() {
+    listaCorridasDiv.innerHTML = "";
+    const termo = filtroCliente.value.toLowerCase();
 
+    corridas
+        .filter(c => c.cliente.toLowerCase().includes(termo))
+        .sort((a, b) => b.id - a.id)
+        .forEach(c => {
+            const div = document.createElement("div");
+            div.className = "corrida-card";
 
-    // =============================================
-    // 3) Média diária do mês
-    // =============================================
-    const mediaDiaria = totalMensal / diasNoMes;
-    mediaDiariaP.textContent =
-        "Média Diária: R$ " + mediaDiaria.toFixed(2);
+            div.innerHTML = `
+                <div class="corrida-main">
+                    <span class="corrida-dest">${c.destino}</span>
+                    <span class="corrida-meta">${c.cliente} • ${new Date(c.data).toLocaleString()}</span>
+                    <span class="corrida-valor">R$ ${c.valor.toFixed(2)}</span>
+                </div>
+                <div class="corrida-actions">
+                    <button class="btn-editar" onclick="editarCorrida(${c.id})">Editar</button>
+                    <button class="btn-excluir" onclick="excluirCorrida(${c.id})">Excluir</button>
+                </div>
+            `;
 
-
-    // =============================================
-    // 4) Média por corrida (mês)
-    // =============================================
-    const mediaPorCorrida = mesCorridas.length ? totalMensal / mesCorridas.length : 0;
-    mediaPorCorridaP.textContent =
-        "Média por Corrida: R$ " + mediaPorCorrida.toFixed(2);
-
-
-    // =============================================
-    // 5) Previsão do faturamento para o mês
-    // =============================================
-    const diaAtualDoMes = now.getDate();
-    const ritmoDiario = totalMensal / diaAtualDoMes;
-    const previsaoMensal = ritmoDiario * diasNoMes;
-
-    previsaoMensalP.textContent =
-        "Previsão de Faturamento do Mês: R$ " + previsaoMensal.toFixed(2);
-
-
-    // =============================================
-    // 6) Comparativo Semana Atual vs Semana Passada
-    // =============================================
-    const semanaPassadaCorridas = corridas.filter(c => {
-        const dias = (now - c.data) / (1000 * 60 * 60 * 24);
-        return dias > 7 && dias <= 14;
-    });
-
-    const totalSemanaPassada = semanaPassadaCorridas.reduce((acc, c) => acc + c.valor, 0);
-
-    const diffSemana = totalSemanal - totalSemanaPassada;
-    const porcentSemana = totalSemanaPassada > 0
-        ? (diffSemana / totalSemanaPassada) * 100
-        : 100;
-
-    comparativoSemanaP.textContent =
-        `Comparativo Semana: ${diffSemana >= 0 ? "+" : ""}${porcentSemana.toFixed(1)}%`;
-
-
-    // =============================================
-    // 7) Comparativo Mês Atual vs Mês Passado
-    // =============================================
-    const mesAnterior = now.getMonth() - 1;
-    const anoReferencia = mesAnterior === -1 ? now.getFullYear() - 1 : now.getFullYear();
-    const mesAnteriorAjustado = mesAnterior === -1 ? 11 : mesAnterior;
-
-    const mesPassadoCorridas = corridas.filter(c =>
-        c.data.getMonth() === mesAnteriorAjustado &&
-        c.data.getFullYear() === anoReferencia
-    );
-
-    const totalMesPassado = mesPassadoCorridas.reduce((acc, c) => acc + c.valor, 0);
-
-    const diffMes = totalMensal - totalMesPassado;
-    const porcentMes = totalMesPassado > 0
-        ? (diffMes / totalMesPassado) * 100
-        : 100;
-
-    comparativoMesP.textContent =
-        `Comparativo Mensal: ${diffMes >= 0 ? "+" : ""}${porcentMes.toFixed(1)}%`;
-
-
-    // =============================================
-    // 8) SOMA POR CLIENTE
-    // =============================================
-    const clienteMap = {};
-    corridas.forEach(c => {
-        clienteMap[c.cliente] = (clienteMap[c.cliente] || 0) + c.valor;
-    });
-
-    let clienteResumo = Object.entries(clienteMap)
-        .map(entry => entry[0] + ": R$ " + entry[1].toFixed(2))
-        .join(" | ");
-
-    totalPorClienteP.textContent = "Total por Cliente: " + (clienteResumo || "Nenhum");
+            listaCorridasDiv.appendChild(div);
+        });
 }
 
 
-// Excluir corrida
-function excluirCorrida(index) {
-    if (confirm('Deseja realmente excluir esta corrida?')) {
-        corridas.splice(index, 1);
-        salvarLocalStorage();
-        atualizarTabela();
+/* ===== Excluir ===== */
+function excluirCorrida(id) {
+    corridas = corridas.filter(c => c.id !== id);
+    salvar();
+    atualizarLista();
+    atualizarResumo();
+    atualizarGrafico();
+}
+
+/* ===== Editar ===== */
+function editarCorrida(id) {
+    const c = corridas.find(c => c.id === id);
+    if (!c) return;
+
+    const novoCliente = prompt("Editar cliente:", c.cliente);
+    const novoDestino = prompt("Editar destino:", c.destino);
+    const novoValor = parseFloat(prompt("Editar valor:", c.valor));
+
+    if (novoCliente && novoDestino && !isNaN(novoValor)) {
+        c.cliente = novoCliente;
+        c.destino = novoDestino;
+        c.valor = novoValor;
+
+        salvar();
+        atualizarLista();
+        atualizarResumo();
+        atualizarGrafico();
     }
 }
 
-// Salvar no localStorage
-function salvarLocalStorage() {
-    localStorage.setItem('corridasLalamove', JSON.stringify(corridas));
-}
+/* ===== Resumos ===== */
+function atualizarResumo() {
+    const now = new Date();
 
-// Filtros
-filtroCliente.addEventListener('input', atualizarTabela);
-filtroMes.addEventListener('change', atualizarTabela);
-limparFiltro.addEventListener('click', function () {
-    filtroCliente.value = '';
-    filtroMes.value = '';
-    atualizarTabela();
-});
-
-// Exportar Excel
-exportExcelBtn.addEventListener('click', function () {
-    const ws = XLSX.utils.json_to_sheet(corridas.map(function (c) {
-        return {
-            Data: c.data.toLocaleDateString(),
-            Partida: c.partida,
-            Cliente: c.cliente,
-            Motivo: c.motivo,
-            Destino: c.destino,
-            Valor: c.valor.toFixed(2)
-        };
-    }));
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Corridas');
-    XLSX.writeFile(wb, 'Relatorio_Lalamove.xlsx');
-});
-
-// Exportar PDF
-exportPDFBtn.addEventListener('click', function () {
-    const jsPDF = window.jspdf.jsPDF;
-    const doc = new jsPDF();
-    doc.text('Relatório Lalamove', 14, 20);
-    let y = 30;
-
-    corridas.forEach(function (c) {
-        const linha = c.data.toLocaleDateString() + ' | ' +
-            c.partida + ' | ' +
-            c.cliente + ' | ' +
-            c.motivo + ' | ' +
-            c.destino + ' | R$ ' + c.valor.toFixed(2);
-        doc.text(linha, 14, y);
-        y += 10;
-        if (y > 280) {
-            doc.addPage();
-            y = 20;
-        }
+    const semana = corridas.filter(c => (now - new Date(c.data)) / 86400000 <= 7);
+    const mes = corridas.filter(c => {
+        const d = new Date(c.data);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });
 
-    doc.save('Relatorio_Lalamove.pdf');
-});
+    const totalSemanal = semana.reduce((acc, c) => acc + c.valor, 0);
+    const mediaSemanal = semana.length ? totalSemanal / semana.length : 0;
+    const totalMensal = mes.reduce((acc, c) => acc + c.valor, 0);
+
+    totalSemanalP.textContent = "R$ " + totalSemanal.toFixed(2);
+    mediaSemanalP.textContent = "R$ " + mediaSemanal.toFixed(2);
+    totalMensalP.textContent = "R$ " + totalMensal.toFixed(2);
+
+    const mapa = {};
+    corridas.forEach(c => {
+        mapa[c.cliente] = (mapa[c.cliente] || 0) + c.valor;
+    });
+
+    totalPorClienteP.textContent = Object.entries(mapa)
+        .map(([cliente, total]) => `${cliente}: R$ ${total.toFixed(2)}`)
+        .join(" | ") || "Nenhum";
+}
+
+function login() {
+    const u = document.getElementById("loginUser").value;
+    const p = document.getElementById("loginPass").value;
+
+    if (u === "la belle" && p === "0704") {
+        localStorage.setItem("logado", "true");
+        document.getElementById("loginTela").style.display = "none";
+        document.querySelector(".container").style.display = "block";
+    } else {
+        document.getElementById("loginErro").textContent = "Login inválido";
+    }
+}
+
+function atualizarGrafico() {
+    const porCliente = {};
+
+    corridas.forEach(c => {
+        porCliente[c.cliente] = (porCliente[c.cliente] || 0) + c.valor;
+    });
+
+    const labels = Object.keys(porCliente);
+    const dados = Object.values(porCliente);
+
+    if (grafico) grafico.destroy();
+
+    grafico = new Chart(document.getElementById("graficoMensal"), {
+        type: "pie",
+        data: {
+            labels,
+            datasets: [{
+                data: dados
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    position: "bottom"
+                }
+            }
+        }
+    });
+}
+
+
+function exportarExcel() {
+    const ws = XLSX.utils.json_to_sheet(corridas);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Corridas");
+    XLSX.writeFile(wb, "corridas.xlsx");
+}
+
+async function exportarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text("Relatório de Corridas", 10, 10);
+    let y = 20;
+
+    corridas.forEach(c => {
+        doc.text(`${c.cliente} - ${c.destino} - R$ ${c.valor}`, 10, y);
+        y += 8;
+    });
+
+    doc.save("corridas.pdf");
+}
+
+
+
+
+window.onload = () => {
+    if (localStorage.getItem("logado") === "true") {
+        document.getElementById("loginTela").style.display = "none";
+        document.querySelector(".container").style.display = "block";
+    }
+    atualizarLista();
+    atualizarResumo();
+};
+
+
+/* Inicializar */
+window.onload = () => {
+    atualizarLista();
+    atualizarResumo();
+    atualizarGrafico();
+};
