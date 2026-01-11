@@ -77,3 +77,49 @@ form button:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0
     width: 100% !important;
     height: auto !important;
 }
+
+/* ===== Filtro ===== */
+#filtroCliente {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+  background: var(--card);
+  color: #fff;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+#filtroCliente::placeholder {
+  color: rgba(255,255,255,0.35);
+  font-style: italic;
+}
+
+/* ===== Botões Exportação ===== */
+.btn-export {
+
+  margin-top: 15px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.btn-export.excel {
+  background: linear-gradient(90deg, #2ecc71, #27ae60);
+  color: #111;
+}
+
+.btn-export.pdf {
+  background: linear-gradient(90deg, #e53935, #ff6f60);
+  color: #fff;
+}
+
+.btn-export:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.6);
+}

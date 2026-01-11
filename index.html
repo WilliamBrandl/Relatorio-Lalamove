@@ -83,13 +83,15 @@
 
         <input type="text" id="filtroCliente" placeholder="Filtrar por cliente...">
 
-        <button onclick="exportarExcel()">Exportar Excel</button>
-        <button onclick="exportarPDF()">Exportar PDF</button>
-
-
+        
 
         <!-- LISTA DE CORRIDAS -->
         <div class="lista-corridas" id="listaCorridas"></div>
+
+
+        <button class="btn-export excel" onclick="exportarExcel()">Exportar Excel</button>
+        <button class="btn-export pdf" onclick="exportarPDF()">Exportar PDF</button>
+
 
         <div class="grafico-container">
             <canvas id="graficoMensal"></canvas>
