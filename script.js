@@ -7,7 +7,6 @@ let grafico;
 const listaCorridasDiv = document.getElementById("listaCorridas");
 const form = document.getElementById("formCorrida");
 
-const totalSemanalP = document.getElementById("totalSemanalP");
 const mediaSemanalP = document.getElementById("mediaSemanalP");
 const totalMensalP = document.getElementById("totalMensalP");
 const totalPorClienteP = document.getElementById("totalPorClienteP");
@@ -16,6 +15,7 @@ const inputCliente = document.getElementById("cliente");
 const inputDestino = document.getElementById("destino");
 const inputValor = document.getElementById("valor");
 const filtroCliente = document.getElementById("filtroCliente");
+const contadorCorridas = document.getElementById("contadorCorridas");
 
 
 /* ===== Salvar no localStorage ===== */
@@ -58,8 +58,11 @@ function atualizarLista() {
     listaCorridasDiv.innerHTML = "";
     const termo = filtroCliente.value.toLowerCase();
 
-    corridas
-        .filter(c => c.cliente.toLowerCase().includes(termo))
+    const filtradas = corridas.filter(c => c.cliente.toLowerCase().includes(termo));
+
+    contadorCorridas.textContent = `${filtradas.length} corrida${filtradas.length !== 1 ? 's' : ''}`;
+
+    filtradas
         .sort((a, b) => b.id - a.id)
         .forEach(c => {
             const div = document.createElement("div");
@@ -92,53 +95,104 @@ function excluirCorrida(id) {
 }
 
 /* ===== Editar ===== */
+
 function editarCorrida(id) {
     const c = corridas.find(c => c.id === id);
     if (!c) return;
 
     const novoCliente = prompt("Editar cliente:", c.cliente);
+    if (novoCliente === null) return;
+
     const novoDestino = prompt("Editar destino:", c.destino);
-    const novoValor = parseFloat(prompt("Editar valor:", c.valor));
+    if (novoDestino === null) return;
 
-    if (novoCliente && novoDestino && !isNaN(novoValor)) {
-        c.cliente = novoCliente;
-        c.destino = novoDestino;
-        c.valor = novoValor;
+    const novoValorStr = prompt("Editar valor:", c.valor);
+    if (novoValorStr === null) return;
+    const novoValor = parseFloat(novoValorStr);
 
-        salvar();
-        atualizarLista();
-        atualizarResumo();
-        atualizarGrafico();
+    const dataAtual = new Date(c.data);
+    const dataFormatada = dataAtual.toISOString().slice(0, 10); // yyyy-mm-dd
+
+    const novaDataStr = prompt("Editar data (AAAA-MM-DD):", dataFormatada);
+    if (novaDataStr === null) return;
+
+    const novaData = new Date(novaDataStr + "T12:00:00");
+
+    if (!novoCliente || !novoDestino || isNaN(novoValor) || isNaN(novaData.getTime())) {
+        alert("Dados inválidos.");
+        return;
     }
+
+    c.cliente = novoCliente;
+    c.destino = novoDestino;
+    c.valor = novoValor;
+    c.data = novaData.toISOString();
+
+    salvar();
+    atualizarLista();
+    atualizarResumo();
+    atualizarGrafico();
 }
 
+
 /* ===== Resumos ===== */
+
 function atualizarResumo() {
     const now = new Date();
 
-    const semana = corridas.filter(c => (now - new Date(c.data)) / 86400000 <= 7);
-    const mes = corridas.filter(c => {
-        const d = new Date(c.data);
-        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    const inicioSemana = new Date();
+    inicioSemana.setHours(0, 0, 0, 0);
+    inicioSemana.setDate(inicioSemana.getDate() - 6); // hoje + 6 dias
+
+    const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    let somaSemana = 0;
+    let totalMensal = 0;
+
+    corridas.forEach(c => {
+        const dataCorrida = new Date(c.data);
+        const valor = Number(c.valor);
+
+        if (isNaN(dataCorrida.getTime()) || isNaN(valor)) return;
+
+        const dataNormalizada = new Date(
+            dataCorrida.getFullYear(),
+            dataCorrida.getMonth(),
+            dataCorrida.getDate()
+        );
+
+        if (dataNormalizada >= inicioSemana) {
+            somaSemana += valor;
+        }
+
+        if (
+            dataNormalizada.getFullYear() === now.getFullYear() &&
+            dataNormalizada.getMonth() === now.getMonth()
+        ) {
+            totalMensal += valor;
+        }
     });
 
-    const totalSemanal = semana.reduce((acc, c) => acc + c.valor, 0);
-    const mediaSemanal = semana.length ? totalSemanal / semana.length : 0;
-    const totalMensal = mes.reduce((acc, c) => acc + c.valor, 0);
+    const mediaSemanal = somaSemana / 7;
 
-    totalSemanalP.textContent = "R$ " + totalSemanal.toFixed(2);
     mediaSemanalP.textContent = "R$ " + mediaSemanal.toFixed(2);
     totalMensalP.textContent = "R$ " + totalMensal.toFixed(2);
 
     const mapa = {};
     corridas.forEach(c => {
-        mapa[c.cliente] = (mapa[c.cliente] || 0) + c.valor;
+        const valor = Number(c.valor);
+        if (!isNaN(valor)) {
+            mapa[c.cliente] = (mapa[c.cliente] || 0) + valor;
+        }
     });
 
     totalPorClienteP.textContent = Object.entries(mapa)
         .map(([cliente, total]) => `${cliente}: R$ ${total.toFixed(2)}`)
         .join(" | ") || "Nenhum";
 }
+
+
+
 
 function login() {
     const u = document.getElementById("loginUser").value;
@@ -208,20 +262,15 @@ async function exportarPDF() {
 
 
 
-
 window.onload = () => {
     if (localStorage.getItem("logado") === "true") {
         document.getElementById("loginTela").style.display = "none";
         document.querySelector(".container").style.display = "block";
     }
-    atualizarLista();
-    atualizarResumo();
-};
 
-
-/* Inicializar */
-window.onload = () => {
     atualizarLista();
     atualizarResumo();
     atualizarGrafico();
 };
+
+

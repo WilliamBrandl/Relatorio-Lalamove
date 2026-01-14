@@ -62,11 +62,9 @@
         </form>
 
         <!-- RESUMOS -->
+
         <div class="resumo-grid">
-            <div class="card resumo-card">
-                <h3>Total Semanal</h3>
-                <p id="totalSemanalP">R$ 0,00</p>
-            </div>
+
             <div class="card resumo-card">
                 <h3>Média Semanal</h3>
                 <p id="mediaSemanalP">R$ 0,00</p>
@@ -79,14 +77,21 @@
                 <h3>Total por Cliente</h3>
                 <p id="totalPorClienteP">Nenhum</p>
             </div>
+
+             <div class="card resumo-card resumo-largo">
+                    
+                </div>
+
         </div>
 
         <input type="text" id="filtroCliente" placeholder="Filtrar por cliente...">
 
-        
+
 
         <!-- LISTA DE CORRIDAS -->
+        <div class="contador-corridas" id="contadorCorridas">0 corridas</div>
         <div class="lista-corridas" id="listaCorridas"></div>
+
 
 
         <button class="btn-export excel" onclick="exportarExcel()">Exportar Excel</button>
