@@ -1,4 +1,3 @@
-
 :root {
   --bg: #0f0f12;
   --card: #151617;
@@ -539,6 +538,19 @@ px;
   transform: translateY(-3px);
   box-shadow: 0 8px 22px rgba(0,0,0,0.6);
 }
+
+.logo-export {
+  width: 160px;
+  margin-bottom: 10px;
+}
+
+#areaExportacao h2 {
+  margin: 10px 0 20px;
+  color: #ff9800;
+  text-align: center;
+}
+
+
 
 
 /* ===== Mobile ===== */

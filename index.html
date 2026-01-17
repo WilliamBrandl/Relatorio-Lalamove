@@ -8,18 +8,35 @@
     <link rel="stylesheet" href="style.css">
 
     <!-- IMPORTANTE: o JS está separado -->
-    <script src="script.js" defer></script>
+
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script src="script.js" defer></script>
 
 
 </head>
 
 <body>
+
+    <div class="container">
+
+        <!-- 🔽 ÁREA QUE SERÁ EXPORTADA NO PDF -->
+        <div id="areaExportacao">
+
+            <div class="header">
+                <img class="logo" src="assets/Logo La Belle.png" alt="Logo da empresa">
+                <div>
+                    <h1>Controle de Corridas</h1>
+                    <p class="sub">Gerencie, edite e acompanhe seus gastos</p>
+                </div>
+            </div>
 
     <div id="loginTela" class="login-container">
         <h2>Login</h2>
@@ -27,87 +44,69 @@
         <input type="password" id="loginPass" placeholder="Senha">
         <button onclick="login()">Entrar</button>
         <p id="loginErro"></p>
-
-
     </div>
 
+    
+            <!-- FORM -->
+            <form id="formCorrida">
+                <h2>Adicionar Corrida</h2>
 
-    <div class="container">
+                <label>Cliente:</label>
+                <input type="text" id="cliente" required>
 
-        <div class="header">
-            <img class="logo" src="assets/Logo La Belle.png" alt="Logo da empresa">
-            <div>
-                <h1>Controle de Corridas</h1>
-                <p class="sub">Gerencie, edite e acompanhe seus gastos</p>
-            </div>
-        </div>
+                <label>Destino:</label>
+                <input type="text" id="destino" required>
 
-        <!-- FORM -->
-        <form id="formCorrida">
-            <h2>Adicionar Corrida</h2>
+                <label>Valor (R$):</label>
+                <input type="number" id="valor" step="0.01" required>
 
-            <label>Cliente:</label>
-            <input type="text" id="cliente" required>
+                <div class="form-actions">
+                    <button type="submit">Salvar</button>
+                    <button class="secondary" type="reset">Limpar</button>
+                </div>
+            </form>
 
-            <label>Destino:</label>
-            <input type="text" id="destino" required>
-
-            <label>Valor (R$):</label>
-            <input type="number" id="valor" step="0.01" required>
-
-            <div class="form-actions">
-                <button type="submit">Salvar</button>
-                <button class="secondary" type="reset">Limpar</button>
-            </div>
-        </form>
-
-        <!-- RESUMOS -->
-
-        <div class="resumo-grid">
-
-            <div class="card resumo-card">
-                <h3>Média Semanal</h3>
-                <p id="mediaSemanalP">R$ 0,00</p>
-            </div>
-            <div class="card resumo-card">
-                <h3>Total Mensal</h3>
-                <p id="totalMensalP">R$ 0,00</p>
-            </div>
-            <div class="card resumo-card">
-                <h3>Total por Cliente</h3>
-                <p id="totalPorClienteP">Nenhum</p>
-            </div>
-
-             <div class="card resumo-card resumo-largo">
-                    
+            <!-- RESUMO -->
+            <div class="resumo-grid">
+                <div class="card resumo-card">
+                    <h3>Média Semanal</h3>
+                    <p id="mediaSemanalP">R$ 0,00</p>
                 </div>
 
-        </div>
+                <div class="card resumo-card">
+                    <h3>Total Mensal</h3>
+                    <p id="totalMensalP">R$ 0,00</p>
+                </div>
 
-        <input type="text" id="filtroCliente" placeholder="Filtrar por cliente...">
+                <div class="card resumo-card resumo-largo">
+                    <h3>Total por Cliente</h3>
+                    <p id="totalPorClienteP">Nenhum</p>
+                </div>
+            </div>
+
+            <input type="text" id="filtroCliente" placeholder="Filtrar por cliente...">
+
+            <!-- LISTA -->
+            <div class="contador-corridas" id="contadorCorridas">0 corridas</div>
+            <div class="lista-corridas" id="listaCorridas"></div>
 
 
+             <!-- 🔼 FIM DA ÁREA EXPORTÁVEL -->
 
-        <!-- LISTA DE CORRIDAS -->
-        <div class="contador-corridas" id="contadorCorridas">0 corridas</div>
-        <div class="lista-corridas" id="listaCorridas"></div>
-
-
-
+        <!-- BOTÕES -->
         <button class="btn-export excel" onclick="exportarExcel()">Exportar Excel</button>
         <button class="btn-export pdf" onclick="exportarPDF()">Exportar PDF</button>
 
+        
+            <!-- GRÁFICO -->
+            <div class="grafico-container">
+                <canvas id="graficoMensal"></canvas>
+            </div>
 
-        <div class="grafico-container">
-            <canvas id="graficoMensal"></canvas>
         </div>
-
-
-
+       
         <footer>© 2025 - Desenvolvido por: William Hartwig Brandl</footer>
 
     </div>
 
 </body>
-
-</html>
