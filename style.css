@@ -131,13 +131,22 @@ form button:hover {
 }
 
 .card.resumo-card {
-  padding: 12:root {
-  --bg: #0f0f12;
-  --card: #151617;
-  --muted: #bdbdbd;
-  --accent: #ff9800;
-  --accent-2: #66b3ff;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,0.02),
+    rgba(255,255,255,0.01)
+  );
+  transition: transform .15s ease, box-shadow .15s ease;
 }
+
+.card.resumo-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
 
 /* Reset */
 * {
@@ -266,15 +275,19 @@ form button:hover {
 .card.resumo-card {
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.03);
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  transition: transform .15s ease, box-shadow .15s ease;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-
 .card.resumo-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Card maior */
+.resumo-largo {
+  grid-column: span 2;
 }
 
 /* Lista */
@@ -372,12 +385,7 @@ form button:hover {
     transform: translateY(0);
   }
 }
-px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.03);
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  transition: transform .15s ease, box-shadow .15s ease;
-}
+
 
 .card.resumo-card:hover {
   transform: translateY(-6px);
