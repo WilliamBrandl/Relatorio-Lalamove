@@ -559,7 +559,30 @@ form button:hover {
 }
 
 
+.footer {
+    background-color: #1e1e1e;
+    color: #ccc;
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    border-top: 1px solid #333;
+}
 
+.footer .social-icons {
+    margin-top: 0.5rem;
+}
+
+.footer .social-icons a {
+    color: #ccc;
+    margin: 0 0.5rem;
+    font-size: 1.5rem;
+    transition: color 0.3s;
+}
+
+.footer .social-icons a:hover {
+    color: #00d1b2;
+}
 
 /* ===== Mobile ===== */
 @media (max-width: 600px) {
